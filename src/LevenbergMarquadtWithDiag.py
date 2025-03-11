@@ -99,7 +99,7 @@ def levenberg_marquardt_fit(file_path, num_iterations, lambda_):
 
 # Example usage
 if __name__ == "__main__":
-    file_path = "data.csv"  # Change this to your actual CSV file
+    file_path = "data/data.csv"  # Change this to your actual CSV file
     lambda_ = 0.05
     num_iterations = 10
     levenberg_marquardt_fit(file_path, num_iterations, lambda_)  # Tune lambda_ as needed

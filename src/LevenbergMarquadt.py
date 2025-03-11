@@ -14,8 +14,8 @@ def jacobian(x, params):
     db = a * x * np.exp(-b * x)   # ∂y/∂b
     return np.column_stack((da, db))
 
-def gauss_newton_fit(file_path, num_iterations):
-    """Perform Gauss-Newton optimization with manual iterations."""
+def levenberg_marquardt_fit(file_path, num_iterations, lambda_):
+    """Perform Levenberg-Marquardt optimization with manual iterations."""
     # Load the CSV file
     df = pd.read_csv(file_path)
     x_data = df['x'].values
@@ -34,12 +34,19 @@ def gauss_newton_fit(file_path, num_iterations):
         # Compute Jacobian (partial derivatives)
         J = jacobian(x_data, params)
 
+        # Compute J^T * J and J^T * residuals
+        JTJ = J.T @ J
+        JTr = J.T @ residuals
+
+        # Add damping term (λ * I) to J^T * J
+        JTJ_damped = JTJ + lambda_ * np.eye(JTJ.shape[0])
+
         # Solve for parameter updates Δp
-        delta_params, _, _, _ = np.linalg.lstsq(J, residuals, rcond=None)
+        delta_params = np.linalg.solve(JTJ_damped, JTr)
 
         # Update parameters
         params += delta_params
-        a, b = params  # Extract updated parameter values
+        a, b = params  # Extract updated parameters
 
         # Compute additional columns
         dy_da = J[:, 0]
@@ -88,11 +95,12 @@ def gauss_newton_fit(file_path, num_iterations):
     plt.xlabel("x")
     plt.ylabel("y")
     plt.legend()
-    plt.title("Gauss-Newton Nonlinear Least Squares Fit")
+    plt.title("Levenberg-Marquardt Nonlinear Least Squares Fit")
     plt.show()
 
 # Example usage
 if __name__ == "__main__":
-    file_path = "data.csv"  # Change this to your actual CSV file
+    file_path = "data/data.csv"  # Change this to your actual CSV file
+    lambda_ = 0.05
     num_iterations = 10
-    gauss_newton_fit(file_path, num_iterations)  # Change number of iterations as needed
+    levenberg_marquardt_fit(file_path, num_iterations, lambda_)  # Tune lambda_ as needed
